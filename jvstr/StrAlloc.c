@@ -82,17 +82,23 @@ void StrAlloc_insert(StrAlloc* str, StrView view, size_t position) {
 }
 
 
-StrAlloc jvsprintf(char const* format, ...) {
-    va_list args, args_copy;
-    va_start(args, format);
-    va_copy(args_copy, args);
-    size_t size = vsnprintf(NULL, 0, format, args);
-    StrAlloc str;
-    str.capacity = size;
-    ENSURES_ALLOC_SUCCESS(str.array = (char*)malloc(str.capacity + 1));
-    vsnprintf(str.array, str.capacity+1, format, args_copy);
-    str.size = size;
-    va_end(args);
-    va_end(args_copy);
-    return str;
+StrAlloc jvstr_vsprintf(char const *format, va_list args) {
+  va_list args_copy;
+  va_copy(args_copy, args);
+  size_t size = vsnprintf(NULL, 0, format, args);
+  StrAlloc str;
+  str.capacity = size;
+  ENSURES_ALLOC_SUCCESS(str.array = (char *)malloc(str.capacity + 1));
+  vsnprintf(str.array, str.capacity + 1, format, args_copy);
+  str.size = size;
+  va_end(args_copy);
+  return str;
+}
+
+StrAlloc jvstr_sprintf(char const *format, ...) {
+  va_list args;
+  va_start(args, format);
+  StrAlloc str = jvstr_vsprintf(format, args);
+  va_end(args);
+  return str;
 }
